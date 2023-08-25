@@ -12,14 +12,14 @@ export GO111MODULE := on
 GOOS := $(if $(GOOS),$(GOOS),linux)
 GOARCH := $(if $(GOARCH),$(GOARCH),amd64)
 GOENV  := GO15VENDOREXPERIMENT="1" CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH)
-GO     := $(GOENV) go
+GO     := $(GOENV) go1.21.0
 GO_BUILD := $(GO) build -trimpath
 GO_SUBMODULES = github.com/pingcap/tidb-operator/pkg/apis github.com/pingcap/tidb-operator/pkg/client
 GO_SUBMODULE_DIRS = pkg/apis pkg/client
 
 DOCKER_REGISTRY ?= localhost:5000
-DOCKER_REPO ?= ${DOCKER_REGISTRY}/pingcap
-IMAGE_TAG ?= latest
+DOCKER_REPO ?= tylergu1998
+IMAGE_TAG ?= cov
 TEST_COVER_PACKAGES := go list ./cmd/... ./pkg/... $(foreach mod, $(GO_SUBMODULES), $(mod)/...) | grep -vE "pkg/client" | grep -vE "pkg/tkctl" | grep -vE "pkg/apis/pingcap" | sed 's|github.com/pingcap/tidb-operator/|./|' | tr '\n' ','
 
 # NOTE: coverage report generated for E2E tests (with `-c`) may not stable, see
@@ -52,7 +52,7 @@ controller-manager:
 ifeq ($(E2E),y)
 	$(GO_TEST) -ldflags '$(LDFLAGS)' -c -o images/tidb-operator/bin/tidb-controller-manager ./cmd/controller-manager
 else
-	$(GO_BUILD) -ldflags '$(LDFLAGS)' -o images/tidb-operator/bin/$(GOARCH)/tidb-controller-manager cmd/controller-manager/main.go
+	$(GO_BUILD) -ldflags '$(LDFLAGS)' -cover -covermode=set -o images/tidb-operator/bin/$(GOARCH)/tidb-controller-manager cmd/controller-manager/main.go
 endif
 
 scheduler:
